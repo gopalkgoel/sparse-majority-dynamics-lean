@@ -1,0 +1,81 @@
+{
+  "source_archive": "MajorityDyn-Theorem11.zip",
+  "archive_sha256": "535de7cae96cd7a5c87dcd31099ce94ec86d6d562bf4a2735f29c2065084ef2e",
+  "source_lean_toolchain": "leanprover/lean4:v4.33.1",
+  "source_mathlib_rev": "v4.33.1",
+  "integrated_lean_toolchain": "leanprover/lean4:v4.33.0",
+  "integrated_mathlib_rev": "db584cd6d46c92f209a44c0f1c829460d327499d",
+  "citation": {
+    "authors": [
+      "Nikolaos Fountoulakis",
+      "Mihyun Kang",
+      "Tamás Makai"
+    ],
+    "title": "Resolution of a conjecture on majority dynamics: rapid stabilisation in dense random graphs",
+    "arxiv": "1910.05820",
+    "version": "v2",
+    "theorem": "1.1"
+  },
+  "modules": [
+    {
+      "source_path": "MajorityDyn/Binom.lean",
+      "integrated_path": "lean/MajorityDynamics/Literature/FKMFormal/Binom.lean",
+      "source_sha256": "89b6cc7be93aa1b39b086bc627ec585f68a23d0cf8b1e1df380659f47486dedc",
+      "integrated_sha256": "8ac7e95cb2a70ef3d616923f476ec86ee665c7b7a2e469151a2f46e40f55a950"
+    },
+    {
+      "source_path": "MajorityDyn/Chernoff.lean",
+      "integrated_path": "lean/MajorityDynamics/Literature/FKMFormal/Chernoff.lean",
+      "source_sha256": "6486bd5071ed365dc9d7411ce16c98ab9a7a493552b55d1d24b225f402a8374c",
+      "integrated_sha256": "cad5346b884d4c0535d7bf96fd0b8a0c52eb17384aa8e136d7650f04d4a3a5fb"
+    },
+    {
+      "source_path": "MajorityDyn/Core.lean",
+      "integrated_path": "lean/MajorityDynamics/Literature/FKMFormal/Core.lean",
+      "source_sha256": "2b38239caa9f5db3eba1c47d75ed300348a76161b6ef27de4a3640e021fc4d35",
+      "integrated_sha256": "a27025044fa9a165279276750a4b853eeaf3bca2b004207a67336096ba1186a0"
+    },
+    {
+      "source_path": "MajorityDyn/Defs.lean",
+      "integrated_path": "lean/MajorityDynamics/Literature/FKMFormal/Defs.lean",
+      "source_sha256": "6c6f47661ed06faf582b46b6def05b0f44226e9c3e7199015e03673e3bfcb14f",
+      "integrated_sha256": "2f7c50934afc13265d5fe9c7e9275126304eb78cbaa07c1ad88067da52567eea"
+    },
+    {
+      "source_path": "MajorityDyn/Final.lean",
+      "integrated_path": "lean/MajorityDynamics/Literature/FKMFormal/Final.lean",
+      "source_sha256": "f420c172dc1d97921d29a71bf4b0645ac8ca7103f13698e95ca166e5e75be0c8",
+      "integrated_sha256": "aa0d1dccc5a270fb0b7bb3cf65605ff3816ab8c7c5a4216cd17b26bd98c7e1d1"
+    },
+    {
+      "source_path": "MajorityDyn/Graph.lean",
+      "integrated_path": "lean/MajorityDynamics/Literature/FKMFormal/Graph.lean",
+      "source_sha256": "ac1c0b7e0713b0a591e67a598669bd1e115619d04dc4901340ac17f974199004",
+      "integrated_sha256": "6919ee120a1f541d7d467b984a282a4b72404d61394c8e09877943a98a6faa38"
+    },
+    {
+      "source_path": "MajorityDyn/Lemma41.lean",
+      "integrated_path": "lean/MajorityDynamics/Literature/FKMFormal/Lemma41.lean",
+      "source_sha256": "0a808624151fe532ad883359a7af3c10384a5501e9014b1ce336855a8ecb7eb5",
+      "integrated_sha256": "ea2a24624bfdde9697ec75e00e468b7283deb0bdae92a3ade6754b736d861631"
+    },
+    {
+      "source_path": "MajorityDyn/Prob.lean",
+      "integrated_path": "lean/MajorityDynamics/Literature/FKMFormal/Prob.lean",
+      "source_sha256": "ddb27627a99101de5a14e046dc549aae62db2ee8a520b77e88cac2987d802cda",
+      "integrated_sha256": "340cee9b86917dd46a3b81bba8eebef880cf7c217953aa51ec9b895b43d82660"
+    },
+    {
+      "source_path": "MajorityDyn/Round2.lean",
+      "integrated_path": "lean/MajorityDynamics/Literature/FKMFormal/Round2.lean",
+      "source_sha256": "54a5685876fdb76a51c3868a603d87dc6b2363748dba677f7cf5885d967692e9",
+      "integrated_sha256": "de94a978766f4cb9b1b85f99f6146c9864a72523736e32366ab7a963c159cb1f"
+    },
+    {
+      "source_path": "MajorityDyn/Sanity.lean",
+      "integrated_path": "lean/MajorityDynamics/Literature/FKMFormal/Sanity.lean",
+      "source_sha256": "4c73e19d0c5c2e7c94c870020bb111b56c803e0ce604e56f0828f8dfba42ed85",
+      "integrated_sha256": "afde6931c7a05acd2aa17d85a56531cf7e3635d65c86e13396e7e5f0f57a00f8"
+    }
+  ]
+}

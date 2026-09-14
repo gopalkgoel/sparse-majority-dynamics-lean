@@ -1,0 +1,140 @@
+name: Lean
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lean-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and check the main theorems
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free disk space for the Mathlib cache and build products
+        # ubuntu-latest ships ~25 GB of toolchains this build never uses; a full
+        # build can run out of disk without this.
+        run: |
+          df -h / | tail -1
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL /usr/local/share/boost /usr/share/swift /usr/local/share/chromium /usr/local/lib/node_modules 2>/dev/null || true
+          sudo docker image prune -af >/dev/null 2>&1 || true
+          df -h / | tail -1
+      - name: Restore the project's compiled modules (Lake re-verifies every trace)
+        id: restore
+        uses: actions/cache/restore@v4
+        with:
+          path: .lake/build
+          key: lean-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-${{ hashFiles('lakefile.toml', '**/*.lean', '!.lake/**') }}
+          # Source changes may reuse artifacts: Lake validates their traces.
+          # Never fall back across toolchain or dependency pins.
+          restore-keys: |
+            lean-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          build: true
+          build-args: '--wfail'
+          use-mathlib-cache: true
+          # Mathlib's own precompiled cache is much faster than archiving the
+          # multi-GB .lake directory on every commit.
+          use-github-cache: false
+      - name: Sparse-range main theorem (foundations-only)
+        run: lake env lean PaperCompletion.lean
+      - name: Full uniform theorem, including p = 1 (foundations-only)
+        run: lake env lean UniformCompletion.lean
+      - name: Save the completed build after any non-exact cache restore
+        if: success() && steps.restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .lake/build
+          key: ${{ steps.restore.outputs.cache-primary-key }}
+
+  literature-build:
+    name: Build and audit the eleven literature goals
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    outputs:
+      completion-exit-code: ${{ steps.report.outputs.exit-code }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free disk space for the Mathlib cache and build products
+        run: |
+          df -h / | tail -1
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL /usr/local/share/boost /usr/share/swift /usr/local/share/chromium /usr/local/lib/node_modules 2>/dev/null || true
+          sudo docker image prune -af >/dev/null 2>&1 || true
+          df -h / | tail -1
+      - name: Restore the project's compiled modules (Lake re-verifies every trace)
+        id: restore
+        uses: actions/cache/restore@v4
+        with:
+          path: .lake/build
+          key: lean-lit-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-${{ hashFiles('lakefile.toml', '**/*.lean', '!.lake/**') }}
+          # Same toolchain and dependency pins only; a bump gets a cold build.
+          restore-keys: |
+            lean-lit-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-
+            lean-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-
+      - name: Check the literature import boundary and the report tooling
+        run: |
+          mkdir -p out/literature
+          python3 scripts/check_literature_boundary.py --cache-roots out/literature/cache-roots.txt
+          python3 scripts/test_literature_scaffold.py
+      - name: Install the pinned Lean toolchain
+        run: |
+          curl --fail --silent --show-error --location https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o "$RUNNER_TEMP/elan-init.sh"
+          sh "$RUNNER_TEMP/elan-init.sh" -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Build only LiteratureGoals, independently of the paper modules
+        run: |
+          mapfile -t cache_roots < out/literature/cache-roots.txt
+          lake exe cache get "${cache_roots[@]}"
+          lake build --wfail LiteratureGoals
+          python3 scripts/test_literature_audit.py
+      - name: Run the strict literature completion check and write the report
+        id: report
+        env:
+          COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set +e
+          lake env lean LiteratureCompletion.lean > out/literature/completion.log 2>&1
+          rc=$?
+          set -e
+          cat out/literature/completion.log
+          python3 scripts/literature_report.py out/literature/completion.log --exit-code "$rc" --commit "$COMMIT" --output out/literature
+          cat out/literature/goals.md >> "$GITHUB_STEP_SUMMARY"
+          echo "exit-code=$(cat out/literature/completion-exit-code)" >> "$GITHUB_OUTPUT"
+      - name: Save the completed build after any non-exact cache restore
+        if: success() && steps.restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .lake/build
+          key: ${{ steps.restore.outputs.cache-primary-key }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: literature-report
+          path: out/literature
+          if-no-files-found: ignore
+
+  literature-completion:
+    name: Literature completion
+    needs: literature-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Report whether all eleven goals are proved from foundations
+        env:
+          RC: ${{ needs.literature-build.outputs.completion-exit-code }}
+        run: |
+          if [ "$RC" != 0 ]; then
+            echo 'Literature completion is unfinished; the literature-build summary lists every goal.' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo 'All eleven literature goals are proved using only Lean standard foundations.' >> "$GITHUB_STEP_SUMMARY"

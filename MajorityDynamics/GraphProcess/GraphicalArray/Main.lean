@@ -1,0 +1,2 @@
+import MajorityDynamics.GraphProcess.GraphicalArray.Components
+import MajorityDynamics.GraphProcess.GraphicalArray.Identification
